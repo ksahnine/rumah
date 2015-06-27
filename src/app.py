@@ -13,29 +13,35 @@ import os
 import sys
 import time
 import yaml
-
 from pushbullet import Listener, PushBullet, Device
+
+sys.path.append( "%s/%s" % (os.getcwd(), 'tpp'))
+from libs.velib import Velib
 
 def usage():
     """
     Display usage
     """
-    sys.stderr.write( "Usage: app.py [-c <config-file> | --config=<config-file>]\n)
+    sys.stderr.write( "Usage: app.py [-c <config-file> | --config=<config-file>]\n")
 
 def notify_velib(conf):
     """
-    Notifie la disponibilite des Velibs a proximite 
+    Envoi un CR de disponibilite des Velibs a proximite 
     """
     loc = conf["location"]
+    velib = Velib()
+    message = ""
+    for station, nbVelib in velib.dispo(loc).items():
+        message += "Station %s : %d velos\n" % (station, nbVelib)
     pb = PushBullet(conf["pushbullet"]["api"])
     phone = pb.devices[0]
-    phone.push_note("Dispos Vélibs", "Ceci est une notification")
+    phone.push_note("Dispos Velibs", message)
 
 def main(argv):
     """
     Main
     """
-    configFile = "../conf/devices.yml"
+    configFile = "../conf/config.yml"
     logger = logging.getLogger()
     handler = logging.StreamHandler(sys.stdout)
 
